@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width: 500px;">
+    <div class="card-header bg-danger text-white">
+        Delete File
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">File Name</label>
+                <input type="text" class="form-control" name="filename" required>
+            </div>
+            <div class="alert alert-warning">
+                Warning: This action cannot be undone!
+            </div>
+            <button type="submit" class="btn btn-danger">Delete Permanently</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width: 600px;">
+    <div class="card-header bg-success text-white">
+        Write to File
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">File Name</label>
+                <input type="text" class="form-control" name="filename" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Content</label>
+                <textarea class="form-control" name="content" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Add Content</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card text-center">
+    <div class="card-body">
+        <h5 class="card-title"> <b><i>Available Operations</i></b></h5>
+        <div class="d-grid gap-2 col-6 mx-auto">
+            <a href="{{ url_for('write') }}" class="btn btn-warning mb-2">Write Content</a>
+            <a href="{{ url_for('update') }}" class="btn btn-info mb-2">Update Content</a>
+            <a href="{{ url_for('clear') }}" class="btn btn-secondary mb-2">Clear File</a>
+            <a href="{{ url_for('delete') }}" class="btn btn-danger mb-2">Delete File</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
