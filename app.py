@@ -50,8 +50,11 @@ def write():
 @app.route('/read/<filename>')
 def read(filename):
     file_path: str = str(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    file_op = FileOperation(file_path)
-    content = file_op.read_file()
+    if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
+        return render_template('index.html',message=flash(f'File "{filename}" does not exist.', 'danger'))
+    else:
+        file_op = FileOperation(file_path)
+        content = file_op.read_file()
     return render_template('read.html', filename=filename, content=content)
 
 @app.route('/update', methods=['GET', 'POST'])
