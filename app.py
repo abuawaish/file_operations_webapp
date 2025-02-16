@@ -49,65 +49,82 @@ def write():
 
 @app.route('/read/<filename>')
 def read(filename):
-    file_path: str = str(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
-        return render_template('index.html',message=flash(f'File "{filename}" does not exist.', 'danger'))
-    else:
-        file_op = FileOperation(file_path)
-        content = file_op.read_file()
-    return render_template('read.html', filename=filename, content=content)
+    try:
+        file_path: str = str(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
+            return render_template('index.html',message=flash(f'File "{filename}" does not exist.', 'danger'))
+        else:
+            file_op = FileOperation(file_path)
+            content = file_op.read_file()
+        return render_template('read.html', filename=filename, content=content)
+    except Exception as e:
+        return render_template('index.html', message=flash(f'Error reading file: {e}', 'danger'))
 
 @app.route('/update', methods=['GET', 'POST'])
 def update():
-    if request.method == 'POST':
-        filename = request.form['filename']
-        line_number = int(request.form['line_number'])
-        new_content = request.form['new_content']
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file_op = FileOperation(file_path)
-        result = file_op.update_file_content(line_number, new_content)
-        flash(result, 'success' if 'updated' in result else 'danger')
-        return redirect(url_for('read', filename=filename))
-    return render_template('update.html')
+    try:
+        if request.method == 'POST':
+            filename = request.form['filename']
+            if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
+                return render_template('index.html', message=flash(f'File "{filename}" does not exist.', 'danger'))
+            else:
+                line_number = int(request.form['line_number'])
+                new_content = request.form['new_content']
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file_op = FileOperation(file_path)
+                result = file_op.update_file_content(line_number, new_content)
+                flash(result, 'success' if 'updated' in result else 'danger')
+                return redirect(url_for('read', filename=filename))
+        return render_template('update.html')
+    except Exception as e:
+        return render_template('index.html', message=flash(f'Error updating file: {e}', 'danger'))
 
 @app.route('/clear', methods=['GET', 'POST'])
 def clear():
-    if request.method == 'POST':
-        filename = request.form['filename']
-        if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
-            flash(f'File "{filename}" does not exist.', 'danger')
-            return redirect(url_for('index'))
-        else:
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file_op = FileOperation(file_path)
-            result = file_op.clear_file_content()
-            flash(result, 'success' if 'cleared' in result else 'danger')
-        return redirect(url_for('read', filename=filename))
-    return render_template('clear.html')
+    try:
+        if request.method == 'POST':
+            filename = request.form['filename']
+            if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
+                flash(f'File "{filename}" does not exist.', 'danger')
+                return redirect(url_for('index'))
+            else:
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file_op = FileOperation(file_path)
+                result = file_op.clear_file_content()
+                flash(result, 'success' if 'cleared' in result else 'danger')
+            return redirect(url_for('read', filename=filename))
+        return render_template('clear.html')
+    except Exception as e:
+        return render_template('index.html', message=flash(f'Error clearing file: {e}', 'danger'))
 
 
 @app.route('/delete', methods=['GET', 'POST'])
 def delete():
-    if request.method == 'POST':
-        filename = request.form.get('filename', '').strip()
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    try:
+        if request.method == 'POST':
+            filename = request.form.get('filename', '').strip()
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-                flash(f'File "{filename}" has been deleted successfully.', 'success')
-            except Exception as e:
-                flash(f'Error deleting file: {str(e)}', 'danger')
-        else:
-            flash(f'File "{filename}" does not exist.', 'danger')
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    flash(f'File "{filename}" has been deleted successfully.', 'success')
+                except Exception as e:
+                    flash(f'Error deleting file: {str(e)}', 'danger')
+            else:
+                flash(f'File "{filename}" does not exist.', 'danger')
 
-        return redirect(url_for('index'))
-
-    return render_template('delete.html')
+            return redirect(url_for('index'))
+        return render_template('delete.html')
+    except Exception as e:
+        return render_template('index.html', message=flash(f'Error deleting file: {e}', 'danger'))
 
 @app.route('/download/<filename>')
 def download(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+    if filename not in os.listdir(app.config['UPLOAD_FOLDER']):
+        return render_template('index.html', message=flash(f'File "{filename}" does not exist.', 'danger'))
+    else:
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
