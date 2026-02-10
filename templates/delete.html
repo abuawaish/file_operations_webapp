@@ -1,21 +1,398 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card mx-auto" style="max-width: 500px;">
-    <div class="card-header bg-danger text-white">
-        Delete File
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">File Name</label>
-                <input type="text" class="form-control" name="filename" required>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card glass-effect animate__animated animate__heartBeat">
+            <div class="card-header d-flex align-items-center justify-content-between bg-gradient-danger text-white">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon me-3 bg-white bg-opacity-20">
+                        <i class="fas fa-trash-alt fa-2x"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">Delete File Permanently</h3>
+                        <p class="mb-0 opacity-75">This action cannot be undone</p>
+                    </div>
+                </div>
+                <div class="danger-badge">
+                    <i class="fas fa-skull-crossbones"></i>
+                </div>
             </div>
-            <div class="alert alert-warning">
-                Warning: This action cannot be undone!
+
+            <div class="card-body p-4">
+                <div class="danger-alert glass-effect p-4 mb-4">
+                    <div class="d-flex align-items-start">
+                        <div class="danger-icon me-3">
+                            <i class="fas fa-radiation fa-2x text-danger"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Critical Warning: Permanent Deletion
+                            </h5>
+                            <ul class="mb-0 mt-2">
+                                <li>File will be permanently deleted from the system</li>
+                                <li>This action cannot be reversed or recovered</li>
+                                <li>All file contents will be lost forever</li>
+                                <li>Use with extreme caution</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" id="deleteForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-file-exclamation me-2"></i>File Name to Delete
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-gradient-danger text-white">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control"
+                                   name="filename"
+                                   placeholder="Enter filename to delete"
+                                   required
+                                   id="filenameInput"
+                                   autocomplete="off">
+                            <button type="button" class="btn btn-outline-danger" onclick="previewFile()">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                        </div>
+                        <div class="form-text mt-2">
+                            Double-check the filename before proceeding
+                        </div>
+                    </div>
+
+                    <div class="file-preview-section" id="previewSection" style="display: none;">
+                        <div class="file-preview glass-effect p-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0" id="previewFileName"></h6>
+                                <span class="badge bg-danger" id="fileSize"></span>
+                            </div>
+                            <div class="preview-content bg-dark text-light p-3 rounded mb-3" id="previewContent">
+                                <!-- File preview will be shown here -->
+                            </div>
+                            <div class="text-center text-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                This file will be permanently deleted
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verification-steps">
+                        <div class="step mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirm1">
+                                <label class="form-check-label" for="confirm1">
+                                    I understand this action is permanent and irreversible
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="step mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirm2">
+                                <label class="form-check-label" for="confirm2">
+                                    I have verified the filename is correct
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="step mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirm3">
+                                <label class="form-check-label" for="confirm3">
+                                    I have backed up any important data from this file
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="final-confirmation mb-4" id="finalConfirmation" style="display: none;">
+                            <label class="form-label fw-bold text-danger">
+                                <i class="fas fa-keyboard me-2"></i>Final Confirmation
+                            </label>
+                            <input type="text"
+                                   class="form-control text-center fw-bold border-danger"
+                                   placeholder="Type 'DELETE PERMANENTLY' to confirm"
+                                   id="finalConfirmationInput"
+                                   oninput="enableDeleteButton()">
+                            <div class="form-text mt-2 text-center">
+                                This is your final warning. Type the exact phrase above.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit"
+                                class="btn btn-gradient-danger btn-lg py-3"
+                                id="deleteBtn"
+                                disabled>
+                            <i class="fas fa-trash-alt me-2"></i>
+                            <span class="btn-text">Delete File Permanently</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Deleting...
+                            </span>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-lg"
+                                onclick="window.location.href='{{ url_for('index') }}'">
+                            <i class="fas fa-times me-2"></i>Cancel Operation
+                        </button>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-danger">Delete Permanently</button>
-        </form>
+
+            <div class="card-footer bg-danger bg-opacity-10">
+                <div class="row text-center">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <i class="fas fa-history me-2 text-danger"></i>
+                            <div>
+                                <div class="fw-bold">No Recovery</div>
+                                <small class="text-muted">Files cannot be restored</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <i class="fas fa-ban me-2 text-danger"></i>
+                            <div>
+                                <div class="fw-bold">Immediate</div>
+                                <small class="text-muted">Action takes effect instantly</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #fc8181 0%, #f56565 50%, #e53e3e 100%);
+}
+
+.danger-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 1.25rem;
+}
+
+.danger-alert {
+    background: linear-gradient(135deg, rgba(252, 129, 129, 0.1) 0%, rgba(229, 62, 62, 0.1) 100%);
+    border-left: 4px solid #e53e3e;
+    border-radius: 10px;
+}
+
+.danger-icon {
+    animation: pulse 1.5s infinite;
+}
+
+.file-preview-section {
+    animation: slideInDown 0.5s ease-out;
+}
+
+.preview-content {
+    font-family: 'Courier New', monospace;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.form-check-input:checked {
+    background-color: #e53e3e;
+    border-color: #e53e3e;
+}
+
+#finalConfirmationInput {
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+    padding: 1rem;
+    border-width: 2px;
+}
+
+#finalConfirmationInput:focus {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.btn-gradient-danger {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-gradient-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-gradient-danger:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 25px rgba(229, 62, 62, 0.4);
+}
+
+.btn-gradient-danger:not(:disabled)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.btn-gradient-danger:not(:disabled):hover::before {
+    left: 100%;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+</style>
+
+<script>
+function previewFile() {
+    const filename = document.getElementById('filenameInput').value;
+    const previewSection = document.getElementById('previewSection');
+    const previewFileName = document.getElementById('previewFileName');
+    const previewContent = document.getElementById('previewContent');
+    const fileSize = document.getElementById('fileSize');
+
+    if (!filename) {
+        alert('Please enter a filename');
+        return;
+    }
+
+    // Show preview section with animation
+    previewSection.style.display = 'block';
+    previewSection.classList.add('animate__animated', 'animate__fadeIn');
+
+    // Simulate file content (in real app, this would be an AJAX call)
+    previewFileName.textContent = `File: ${filename}`;
+
+    // Generate sample content
+    const sampleContent = `This is a preview of "${filename}"\n` +
+                         `Created: ${new Date().toLocaleDateString()}\n` +
+                         `Size: ${Math.floor(Math.random() * 1000)} KB\n\n` +
+                         `Sample content line 1...\n` +
+                         `Sample content line 2...\n` +
+                         `Sample content line 3...\n` +
+                         `[This file will be permanently deleted]`;
+
+    previewContent.textContent = sampleContent;
+    fileSize.textContent = `${Math.floor(Math.random() * 1000)} KB`;
+
+    // Remove animation class after animation completes
+    setTimeout(() => {
+        previewSection.classList.remove('animate__animated', 'animate__fadeIn');
+    }, 500);
+}
+
+function enableDeleteButton() {
+    const confirm1 = document.getElementById('confirm1');
+    const confirm2 = document.getElementById('confirm2');
+    const confirm3 = document.getElementById('confirm3');
+    const finalConfirmation = document.getElementById('finalConfirmation');
+    const finalConfirmationInput = document.getElementById('finalConfirmationInput');
+    const deleteBtn = document.getElementById('deleteBtn');
+
+    // Show final confirmation when all checkboxes are checked
+    if (confirm1.checked && confirm2.checked && confirm3.checked) {
+        finalConfirmation.style.display = 'block';
+        finalConfirmation.classList.add('animate__animated', 'animate__fadeIn');
+
+        // Enable delete button if final confirmation is correct
+        if (finalConfirmationInput.value === 'DELETE PERMANENTLY') {
+            deleteBtn.disabled = false;
+            finalConfirmationInput.classList.remove('is-invalid');
+            finalConfirmationInput.classList.add('is-valid');
+        } else {
+            deleteBtn.disabled = true;
+            finalConfirmationInput.classList.remove('is-valid');
+            finalConfirmationInput.classList.add('is-invalid');
+        }
+    } else {
+        finalConfirmation.style.display = 'none';
+        deleteBtn.disabled = true;
+    }
+}
+
+// Add event listeners to checkboxes
+document.querySelectorAll('.form-check-input').forEach(checkbox => {
+    checkbox.addEventListener('change', enableDeleteButton);
+});
+
+// Handle form submission
+document.getElementById('deleteForm').addEventListener('submit', function(e) {
+    const deleteBtn = document.getElementById('deleteBtn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
+    const finalConfirmationInput = document.getElementById('finalConfirmationInput');
+
+    if (finalConfirmationInput.value !== 'DELETE PERMANENTLY') {
+        e.preventDefault();
+
+        // Shake animation for incorrect confirmation
+        finalConfirmationInput.classList.add('animate__animated', 'animate__shakeX');
+        setTimeout(() => {
+            finalConfirmationInput.classList.remove('animate__animated', 'animate__shakeX');
+        }, 500);
+
+        return false;
+    }
+
+    // Show loading state
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+    deleteBtn.disabled = true;
+
+    // Add destruction animation to card
+    const card = document.querySelector('.card');
+    card.classList.add('animate__animated', 'animate__hinge');
+
+    // Simulate deletion delay
+    setTimeout(() => {
+        // Form will submit normally
+    }, 2000);
+});
+
+// Add warning when user tries to leave the page
+window.addEventListener('beforeunload', function(e) {
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (!deleteBtn.disabled) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+});
+
+// Initialize danger icon animation
+document.addEventListener('DOMContentLoaded', function() {
+    const dangerIcon = document.querySelector('.danger-icon');
+    setInterval(() => {
+        dangerIcon.classList.toggle('animate__pulse');
+    }, 3000);
+});
+</script>
 {% endblock %}

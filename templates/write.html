@@ -1,22 +1,262 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card mx-auto" style="max-width: 600px;">
-    <div class="card-header bg-success text-white">
-        Write to File
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">File Name</label>
-                <input type="text" class="form-control" name="filename" required>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card glass-effect animate__animated animate__slideInUp">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon me-3 bg-gradient-warning">
+                        <i class="fas fa-pen-fancy fa-2x"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">Write Content to File</h3>
+                        <p class="text-muted mb-0">Add new content to existing files</p>
+                    </div>
+                </div>
+                <div class="badge bg-warning text-dark p-2">
+                    <i class="fas fa-pencil-alt me-1"></i>WRITE MODE
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Content</label>
-                <textarea class="form-control" name="content" rows="4" required></textarea>
+
+            <div class="card-body p-4">
+                <form method="POST" id="writeForm">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-4">
+                                <input type="text"
+                                       class="form-control"
+                                       id="filename"
+                                       name="filename"
+                                       placeholder="Enter filename"
+                                       required>
+                                <label for="filename">
+                                    <i class="fas fa-file me-2"></i>File Name
+                                </label>
+                                <div class="form-text">
+                                    Enter the name of the file you want to write to
+                                </div>
+                            </div>
+
+                            <div class="file-info-card glass-effect p-3 mb-4">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-info-circle me-2 text-info"></i>
+                                    File Requirements
+                                </h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-1">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        File must exist
+                                    </li>
+                                    <li class="mb-1">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Proper file permissions
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Valid file format
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label class="form-label fw-bold mb-3">
+                                    <i class="fas fa-align-left me-2"></i>
+                                    Content to Write
+                                    <span class="badge bg-info ms-2" id="charCount">0 characters</span>
+                                </label>
+                                <textarea class="form-control"
+                                          name="content"
+                                          rows="6"
+                                          placeholder="Enter your content here..."
+                                          required
+                                          id="contentTextarea"
+                                          oninput="updateCharCount()"></textarea>
+
+                                <div class="d-flex justify-content-between mt-2">
+                                    <div class="form-text">
+                                        <i class="fas fa-keyboard me-1"></i>
+                                        Write your content above
+                                    </div>
+                                    <div class="form-text">
+                                        <span id="lineCount">1 line</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="appendMode" name="append">
+                                <label class="form-check-label" for="appendMode">
+                                    Append Mode (Add to existing content)
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="timestamp">
+                                <label class="form-check-label" for="timestamp">
+                                    Add timestamp automatically
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-secondary me-2" onclick="clearForm()">
+                                    <i class="fas fa-eraser me-2"></i>Clear
+                                </button>
+                                <button type="submit" class="btn btn-gradient-success">
+                                    <i class="fas fa-paper-plane me-2"></i>Write to File
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-success">Add Content</button>
-        </form>
+
+            <div class="card-footer">
+                <div class="progress-indicator">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"
+                             style="width: 0%"
+                             id="writeProgress">
+                        </div>
+                    </div>
+                    <div class="text-center mt-2 text-muted">
+                        <small>Ready to write content...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-card glass-effect mt-4 p-4 animate__animated animate__fadeIn" id="previewSection" style="display: none;">
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-eye me-2"></i>Content Preview
+            </h5>
+            <div class="preview-content bg-dark text-light p-3 rounded" id="contentPreview">
+                <!-- Preview will be shown here -->
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.header-icon.bg-gradient-warning {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.btn-gradient-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    border: none;
+}
+
+.file-info-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border-left: 3px solid #4facfe;
+}
+
+.form-floating .form-control {
+    height: calc(3.5rem + 2px);
+    padding: 1rem 0.75rem;
+}
+
+.preview-content {
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.progress-indicator {
+    animation: pulse 2s infinite;
+}
+
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+    from { background-position: 1rem 0; }
+    to { background-position: 0 0; }
+}
+</style>
+
+<script>
+function updateCharCount() {
+    const textarea = document.getElementById('contentTextarea');
+    const charCount = document.getElementById('charCount');
+    const lineCount = document.getElementById('lineCount');
+    const preview = document.getElementById('contentPreview');
+    const previewSection = document.getElementById('previewSection');
+
+    const text = textarea.value;
+    const chars = text.length;
+    const lines = text.split('\n').length;
+
+    charCount.textContent = `${chars} characters`;
+    lineCount.textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
+
+    // Update preview
+    if (text.trim()) {
+        preview.textContent = text;
+        previewSection.style.display = 'block';
+        previewSection.classList.add('animate__fadeIn');
+    } else {
+        previewSection.style.display = 'none';
+    }
+
+    // Update progress bar
+    const progressBar = document.getElementById('writeProgress');
+    const maxChars = 5000; // Maximum expected characters
+    const progress = Math.min((chars / maxChars) * 100, 100);
+    progressBar.style.width = `${progress}%`;
+
+    // Change color based on progress
+    if (progress > 80) {
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+    } else if (progress > 60) {
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-info';
+    } else {
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-success';
+    }
+}
+
+function clearForm() {
+    document.getElementById('writeForm').reset();
+    updateCharCount();
+
+    // Reset progress bar
+    const progressBar = document.getElementById('writeProgress');
+    progressBar.style.width = '0%';
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-success';
+
+    // Show animation
+    document.querySelector('.progress-indicator').classList.add('animate__animated', 'animate__pulse');
+    setTimeout(() => {
+        document.querySelector('.progress-indicator').classList.remove('animate__animated', 'animate__pulse');
+    }, 1000);
+}
+
+// Add timestamp if checkbox is checked
+document.getElementById('timestamp').addEventListener('change', function() {
+    if (this.checked) {
+        const textarea = document.getElementById('contentTextarea');
+        const timestamp = `\n\n[${new Date().toLocaleString()}]`;
+        textarea.value += timestamp;
+        updateCharCount();
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateCharCount();
+});
+</script>
 {% endblock %}

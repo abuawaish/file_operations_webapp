@@ -1,18 +1,296 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card mx-auto" style="max-width: 500px;">
-    <div class="card-header bg-secondary text-white">
-        Clear File Contents
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">File Name</label>
-                <input type="text" class="form-control" name="filename" required>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card glass-effect animate__animated animate__shakeX">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon me-3 bg-gradient-secondary">
+                        <i class="fas fa-broom fa-2x"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">Clear File Contents</h3>
+                        <p class="text-muted mb-0">Remove all content from a file</p>
+                    </div>
+                </div>
+                <div class="p-2 rounded bg-warning bg-opacity-10">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                </div>
             </div>
-            <button type="submit" class="btn btn-danger">Clear Contents</button>
-        </form>
+
+            <div class="card-body p-4">
+                <div class="warning-alert glass-effect p-4 mb-4">
+                    <div class="d-flex align-items-start">
+                        <div class="warning-icon me-3">
+                            <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-warning">Warning: Critical Operation</h5>
+                            <p class="mb-0">
+                                This action will permanently remove all content from the specified file.
+                                The file will become empty but will still exist.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" id="clearForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-file me-2"></i>File Name to Clear
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-gradient-secondary text-white">
+                                <i class="fas fa-file-alt"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control"
+                                   name="filename"
+                                   placeholder="Enter filename to clear"
+                                   required
+                                   id="filenameInput">
+                            <button type="button" class="btn btn-outline-secondary" onclick="validateFile()">
+                                <i class="fas fa-search me-1"></i>Verify
+                            </button>
+                        </div>
+                        <div class="form-text mt-2">
+                            Enter the exact name of the file you want to clear
+                        </div>
+                    </div>
+
+                    <div class="file-status glass-effect p-3 mb-4" id="fileStatus" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-1" id="statusFileName"></h6>
+                                <p class="mb-0 text-muted" id="statusDetails"></p>
+                            </div>
+                            <div class="status-indicator" id="statusIndicator">
+                                <!-- Status indicator will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirmation-step" id="confirmationStep" style="display: none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-shield-alt me-2"></i>Security Confirmation
+                            </label>
+                            <div class="security-input">
+                                <input type="text"
+                                       class="form-control text-center fw-bold"
+                                       placeholder="Type 'CLEAR' to confirm"
+                                       id="confirmationInput"
+                                       oninput="checkConfirmation()">
+                                <div class="form-text mt-2 text-center">
+                                    Type <code>CLEAR</code> in uppercase to confirm this action
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit"
+                                    class="btn btn-gradient-danger btn-lg"
+                                    id="clearBtn"
+                                    disabled>
+                                <i class="fas fa-broom me-2"></i>Clear File Contents
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-footer">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="stat">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                            <div class="fw-bold">Irreversible</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat">
+                            <i class="fas fa-file-signature fa-2x text-info mb-2"></i>
+                            <div class="fw-bold">File Preserved</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat">
+                            <i class="fas fa-bolt fa-2x text-success mb-2"></i>
+                            <div class="fw-bold">Instant</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.warning-alert {
+    background: linear-gradient(135deg, rgba(246, 211, 101, 0.1) 0%, rgba(253, 160, 133, 0.1) 100%);
+    border-left: 4px solid #f6d365;
+    border-radius: 10px;
+}
+
+.warning-icon {
+    animation: pulse 2s infinite;
+}
+
+.file-status {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-indicator.available {
+    background: #38a169;
+    box-shadow: 0 0 10px #38a169;
+}
+
+.status-indicator.not-found {
+    background: #e53e3e;
+    box-shadow: 0 0 10px #e53e3e;
+}
+
+.security-input input {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.security-input input:focus {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.btn-gradient-danger {
+    background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-gradient-danger:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(245, 101, 101, 0.4);
+}
+
+.card-footer .stat {
+    padding: 1rem;
+}
+
+.card-footer .stat div {
+    font-size: 0.875rem;
+    color: #718096;
+}
+</style>
+
+<script>
+function validateFile() {
+    const filename = document.getElementById('filenameInput').value;
+    const fileStatus = document.getElementById('fileStatus');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusFileName = document.getElementById('statusFileName');
+    const statusDetails = document.getElementById('statusDetails');
+    const confirmationStep = document.getElementById('confirmationStep');
+
+    if (!filename) {
+        alert('Please enter a filename');
+        return;
+    }
+
+    // Simulate file check (in real app, this would be an AJAX call)
+    const fileExists = Math.random() > 0.3; // 70% chance file exists for demo
+
+    fileStatus.style.display = 'block';
+    fileStatus.classList.add('animate__animated', 'animate__fadeIn');
+
+    setTimeout(() => {
+        fileStatus.classList.remove('animate__animated', 'animate__fadeIn');
+    }, 500);
+
+    if (fileExists) {
+        // File exists
+        statusIndicator.className = 'status-indicator available';
+        statusFileName.textContent = `File Found: ${filename}`;
+        statusDetails.textContent = 'Ready to clear contents';
+        confirmationStep.style.display = 'block';
+        confirmationStep.classList.add('animate__animated', 'animate__fadeIn');
+
+        // Animate the warning icon
+        document.querySelector('.warning-icon').classList.add('animate__pulse');
+    } else {
+        // File doesn't exist
+        statusIndicator.className = 'status-indicator not-found';
+        statusFileName.textContent = `File Not Found: ${filename}`;
+        statusDetails.textContent = 'Please check the filename and try again';
+        confirmationStep.style.display = 'none';
+    }
+}
+
+function checkConfirmation() {
+    const confirmationInput = document.getElementById('confirmationInput');
+    const clearBtn = document.getElementById('clearBtn');
+
+    if (confirmationInput.value === 'CLEAR') {
+        clearBtn.disabled = false;
+        confirmationInput.classList.remove('is-invalid');
+        confirmationInput.classList.add('is-valid');
+    } else {
+        clearBtn.disabled = true;
+        confirmationInput.classList.remove('is-valid');
+        confirmationInput.classList.add('is-invalid');
+    }
+}
+
+// Add shake animation to form on submit
+document.getElementById('clearForm').addEventListener('submit', function(e) {
+    const confirmationInput = document.getElementById('confirmationInput');
+
+    if (confirmationInput.value !== 'CLEAR') {
+        e.preventDefault();
+        confirmationInput.classList.add('animate__animated', 'animate__shakeX');
+        setTimeout(() => {
+            confirmationInput.classList.remove('animate__animated', 'animate__shakeX');
+        }, 500);
+        return false;
+    }
+
+    // Show loading animation
+    const clearBtn = document.getElementById('clearBtn');
+    const originalText = clearBtn.innerHTML;
+    clearBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Clearing...';
+    clearBtn.disabled = true;
+
+    // Simulate processing
+    setTimeout(() => {
+        clearBtn.innerHTML = originalText;
+        clearBtn.disabled = false;
+    }, 2000);
+});
+
+// Add animation to card on load
+document.addEventListener('DOMContentLoaded', function() {
+    const card = document.querySelector('.card');
+    card.classList.add('animate__animated', 'animate__flipInY');
+
+    setTimeout(() => {
+        card.classList.remove('animate__animated', 'animate__flipInY');
+    }, 1000);
+});
+</script>
 {% endblock %}

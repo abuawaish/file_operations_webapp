@@ -1,26 +1,456 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card mx-auto" style="max-width: 600px;">
-    <div class="card-header bg-warning">
-        Update File Content
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">File Name</label>
-                <input type="text" class="form-control" name="filename" required>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card glass-effect animate__animated animate__flipInX">
+            <div class="card-header d-flex align-items-center">
+                <div class="header-icon me-3 bg-gradient-info">
+                    <i class="fas fa-sync-alt fa-2x"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0">Update File Content</h3>
+                    <p class="text-muted mb-0">Modify specific lines in your files</p>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Line Number</label>
-                <input type="number" class="form-control" name="line_number" required>
+
+            <div class="card-body p-4">
+                <form method="POST" id="updateForm">
+                    <div class="stepper mb-5">
+                        <div class="step active" data-step="1">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">Select File</div>
+                        </div>
+                        <div class="step" data-step="2">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Choose Line</div>
+                        </div>
+                        <div class="step" data-step="3">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Update Content</div>
+                        </div>
+                    </div>
+
+                    <div class="step-content" id="step1">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-file-import me-2"></i>Select File to Update
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-gradient-info text-white">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       name="filename"
+                                       placeholder="Enter filename (e.g., document.txt)"
+                                       required
+                                       id="filenameInput">
+                                <button type="button" class="btn btn-outline-info" onclick="simulateFileSearch()">
+                                    <i class="fas fa-folder-open me-1"></i>Browse
+                                </button>
+                            </div>
+                            <div class="form-text mt-2">
+                                Enter the name of the file you want to update
+                            </div>
+                        </div>
+
+                        <div class="file-preview glass-effect p-3 mb-4" id="filePreview" style="display: none;">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-file-alt me-2"></i>
+                                <span id="previewFileName"></span>
+                            </h6>
+                            <div class="preview-lines" id="previewLines">
+                                <!-- File content will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-content" id="step2" style="display: none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-list-ol me-2"></i>Select Line Number
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="number"
+                                           class="form-control"
+                                           name="line_number"
+                                           min="1"
+                                           required
+                                           id="lineNumberInput"
+                                           placeholder="Enter line number">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="prevLine()">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <input type="text"
+                                               class="form-control text-center"
+                                               id="currentLine"
+                                               readonly
+                                               value="Line: --">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="nextLine()">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-text mt-2">
+                                Total lines in file: <span id="totalLines">0</span>
+                            </div>
+                        </div>
+
+                        <div class="current-line-preview glass-effect p-3">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-highlighter me-2"></i>Current Line Content
+                            </h6>
+                            <div class="line-content bg-light p-2 rounded" id="currentLineContent">
+                                Select a line to preview its content
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-content" id="step3" style="display: none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-edit me-2"></i>New Content for Line <span id="selectedLineNumber">--</span>
+                            </label>
+                            <textarea class="form-control"
+                                      name="new_content"
+                                      rows="4"
+                                      required
+                                      id="newContentInput"
+                                      placeholder="Enter new content for this line"></textarea>
+                            <div class="form-text mt-2">
+                                This will replace the current content of the selected line
+                            </div>
+                        </div>
+
+                        <div class="comparison-preview">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="preview-box old-content">
+                                        <h6 class="fw-bold mb-2">
+                                            <i class="fas fa-history me-2"></i>Old Content
+                                        </h6>
+                                        <div class="content-box bg-light p-2 rounded" id="oldContent">
+                                            <!-- Old content will appear here -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="preview-box new-content">
+                                        <h6 class="fw-bold mb-2">
+                                            <i class="fas fa-magic me-2"></i>New Content
+                                        </h6>
+                                        <div class="content-box bg-success bg-opacity-10 p-2 rounded" id="newContentPreview">
+                                            <!-- New content preview will appear here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons mt-5">
+                        <button type="button" class="btn btn-outline-secondary" id="prevBtn" style="display: none;" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>Previous
+                        </button>
+                        <button type="button" class="btn btn-info float-end" id="nextBtn" onclick="nextStep()">
+                            Next <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        <button type="submit" class="btn btn-gradient-warning float-end" id="submitBtn" style="display: none;">
+                            <i class="fas fa-check-circle me-2"></i>Update Line
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="mb-3">
-                <label class="form-label">New Content</label>
-                <textarea class="form-control" name="new_content" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-warning">Update Line</button>
-        </form>
+        </div>
     </div>
 </div>
+
+<style>
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.stepper::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-circle {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+}
+
+.step-label {
+    font-size: 0.875rem;
+    color: #718096;
+    text-align: center;
+}
+
+.step.active .step-label {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.file-preview {
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.preview-lines {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.preview-lines .line {
+    padding: 2px 0;
+    border-left: 3px solid transparent;
+}
+
+.preview-lines .line:hover {
+    background: #f7fafc;
+    border-left-color: #4facfe;
+}
+
+.preview-lines .line.selected {
+    background: #ebf8ff;
+    border-left-color: #3182ce;
+}
+
+.current-line-preview {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.comparison-preview .preview-box {
+    margin-bottom: 1rem;
+}
+
+.content-box {
+    min-height: 100px;
+    font-family: 'Courier New', monospace;
+}
+
+.old-content .content-box {
+    border-left: 3px solid #e53e3e;
+}
+
+.new-content .content-box {
+    border-left: 3px solid #38a169;
+}
+
+.btn-gradient-warning {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    color: #2d3748;
+    border: none;
+}
+</style>
+
+<script>
+let currentStep = 1;
+const totalSteps = 3;
+let fileLines = [];
+let currentLineIndex = 0;
+
+function updateStepper() {
+    document.querySelectorAll('.step').forEach((step, index) => {
+        if (index + 1 === currentStep) {
+            step.classList.add('active');
+        } else {
+            step.classList.remove('active');
+        }
+    });
+
+    // Show/hide step content
+    for (let i = 1; i <= totalSteps; i++) {
+        const stepContent = document.getElementById(`step${i}`);
+        stepContent.style.display = i === currentStep ? 'block' : 'none';
+    }
+
+    // Update navigation buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+
+    prevBtn.style.display = currentStep > 1 ? 'inline-block' : 'none';
+
+    if (currentStep === totalSteps) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'inline-block';
+    } else {
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+    }
+}
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        // Validate current step
+        if (currentStep === 1) {
+            const filename = document.getElementById('filenameInput').value;
+            if (!filename) {
+                alert('Please enter a filename');
+                return;
+            }
+            // Simulate loading file content
+            simulateFileLoad(filename);
+        } else if (currentStep === 2) {
+            const lineNumber = document.getElementById('lineNumberInput').value;
+            if (!lineNumber || lineNumber < 1) {
+                alert('Please enter a valid line number');
+                return;
+            }
+            updateLinePreview(parseInt(lineNumber));
+        }
+
+        currentStep++;
+        updateStepper();
+        animateStepChange('next');
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        updateStepper();
+        animateStepChange('prev');
+    }
+}
+
+function animateStepChange(direction) {
+    const stepContent = document.getElementById(`step${currentStep}`);
+    stepContent.classList.add('animate__animated');
+    stepContent.classList.add(direction === 'next' ? 'animate__fadeInRight' : 'animate__fadeInLeft');
+
+    setTimeout(() => {
+        stepContent.classList.remove('animate__animated', 'animate__fadeInRight', 'animate__fadeInLeft');
+    }, 500);
+}
+
+function simulateFileSearch() {
+    // This would typically open a file dialog
+    // For demo, we'll just show some sample files
+    const sampleFiles = ['document.txt', 'data.csv', 'notes.md', 'config.json'];
+    const filename = sampleFiles[Math.floor(Math.random() * sampleFiles.length)];
+    document.getElementById('filenameInput').value = filename;
+    simulateFileLoad(filename);
+}
+
+function simulateFileLoad(filename) {
+    // Simulate file loading with sample content
+    document.getElementById('previewFileName').textContent = filename;
+
+    // Generate sample file content
+    fileLines = [];
+    const lineCount = Math.floor(Math.random() * 20) + 5;
+    for (let i = 1; i <= lineCount; i++) {
+        fileLines.push(`Line ${i}: Sample content for ${filename} - This is line number ${i}`);
+    }
+
+    // Display file preview
+    const previewLines = document.getElementById('previewLines');
+    previewLines.innerHTML = '';
+
+    fileLines.forEach((line, index) => {
+        const lineElement = document.createElement('div');
+        lineElement.className = 'line';
+        lineElement.textContent = `${index + 1}: ${line}`;
+        lineElement.onclick = () => {
+            document.querySelectorAll('.line').forEach(l => l.classList.remove('selected'));
+            lineElement.classList.add('selected');
+            document.getElementById('lineNumberInput').value = index + 1;
+            updateLinePreview(index + 1);
+        };
+        previewLines.appendChild(lineElement);
+    });
+
+    // Show preview section
+    document.getElementById('filePreview').style.display = 'block';
+    document.getElementById('totalLines').textContent = fileLines.length;
+
+    // Animate preview
+    document.getElementById('filePreview').classList.add('animate__animated', 'animate__fadeIn');
+    setTimeout(() => {
+        document.getElementById('filePreview').classList.remove('animate__animated', 'animate__fadeIn');
+    }, 500);
+}
+
+function updateLinePreview(lineNumber) {
+    if (lineNumber > 0 && lineNumber <= fileLines.length) {
+        currentLineIndex = lineNumber - 1;
+        document.getElementById('currentLine').value = `Line: ${lineNumber}`;
+        document.getElementById('lineNumberInput').value = lineNumber;
+        document.getElementById('selectedLineNumber').textContent = lineNumber;
+
+        const lineContent = fileLines[currentLineIndex];
+        document.getElementById('currentLineContent').textContent = lineContent;
+        document.getElementById('oldContent').textContent = lineContent;
+
+        // Update new content preview
+        const newContent = document.getElementById('newContentInput').value;
+        document.getElementById('newContentPreview').textContent = newContent || 'Enter new content above';
+    }
+}
+
+function prevLine() {
+    if (currentLineIndex > 0) {
+        updateLinePreview(currentLineIndex);
+    }
+}
+
+function nextLine() {
+    if (currentLineIndex < fileLines.length - 1) {
+        updateLinePreview(currentLineIndex + 2);
+    }
+}
+
+// Update preview when new content changes
+document.getElementById('newContentInput').addEventListener('input', function() {
+    document.getElementById('newContentPreview').textContent = this.value || 'Enter new content above';
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateStepper();
+});
+</script>
 {% endblock %}

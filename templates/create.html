@@ -1,19 +1,166 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card mx-auto" style="max-width: 500px;">
-    <div class="card-header bg-primary text-white">
-        Create New File
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">File Name</label>
-                <input type="text" class="form-control" name="filename" required>
-                <div class="form-text">Example: file_name.file_extension</div>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card glass-effect animate__animated animate__zoomIn">
+            <div class="card-header d-flex align-items-center">
+                <div class="header-icon me-3">
+                    <i class="fas fa-file-medical fa-2x"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0">Create New File</h3>
+                    <p class="text-muted mb-0">Create a new file with custom name and extension</p>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
-        </form>
+
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <form method="POST" class="needs-validation" novalidate>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-file-signature me-2"></i>File Name
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-gradient-primary text-white">
+                                        <i class="fas fa-file-alt"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control form-control-lg"
+                                           name="filename"
+                                           placeholder="example.txt or document.docx"
+                                           required
+                                           pattern="^[a-zA-Z0-9_.-]+\.[a-zA-Z0-9]+$">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid filename with extension (e.g., document.txt)
+                                    </div>
+                                </div>
+                                <div class="form-text mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Format: filename.extension (e.g., <code>report.pdf</code>, <code>data.json</code>)
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="reset" class="btn btn-outline-secondary btn-lg me-2">
+                                    <i class="fas fa-redo me-2"></i>Reset
+                                </button>
+                                <button type="submit" class="btn btn-gradient-primary btn-lg">
+                                    <i class="fas fa-plus-circle me-2"></i>Create File
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="info-box glass-effect p-4 h-100">
+                            <h5 class="mb-3">
+                                <i class="fas fa-lightbulb me-2 text-warning"></i>Tips
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Use descriptive names
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Include proper extensions
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Avoid special characters
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Keep names short & clear
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer text-muted">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Files are created with proper permissions
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <i class="fas fa-clock me-2"></i>
+                        Instant file creation
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.header-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.btn-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-gradient-primary:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.info-box {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.form-control-lg {
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
+}
+
+.input-group-text {
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
 {% endblock %}
